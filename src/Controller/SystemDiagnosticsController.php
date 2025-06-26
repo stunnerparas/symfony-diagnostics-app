@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Diagnostics\DTO\DiagnosticsRequestDTO;
 use App\Diagnostics\DTO\DiagnosticsResponseDTO;
-use App\Diagnostics\Exception\InvalidProviderException;
 use App\Service\SystemDiagnosticsCollectorInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -80,8 +79,8 @@ class SystemDiagnosticsController extends AbstractController
 
         try {
             $requestDto = $this->deserializeAndValidateRequest($request);
+            /** @var array<string> $include */
             $include = $this->resolveIncludeArray($requestDto);
-            // Collect diagnostics, no special formatting for API output
             $diagnostics = $this->collector->collect($include);
 
             $response = new DiagnosticsResponseDTO(
@@ -98,11 +97,6 @@ class SystemDiagnosticsController extends AbstractController
         } catch (\InvalidArgumentException $e) {
             return $this->json([
                 'error' => 'Invalid request',
-                'message' => $e->getMessage()
-            ], Response::HTTP_BAD_REQUEST);
-        } catch (InvalidProviderException $e) {
-            return $this->json([
-                'error' => 'Invalid provider',
                 'message' => $e->getMessage()
             ], Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $e) {
@@ -134,6 +128,9 @@ class SystemDiagnosticsController extends AbstractController
         return $requestDto;
     }
 
+    /**
+     * @return array<string>
+     */
     private function resolveIncludeArray(DiagnosticsRequestDTO $requestDto): array
     {
         if ($requestDto->level) {
@@ -143,6 +140,6 @@ class SystemDiagnosticsController extends AbstractController
                 default => [],
             };
         }
-        return $requestDto->include;
+        return $requestDto->include ?? [];
     }
 }

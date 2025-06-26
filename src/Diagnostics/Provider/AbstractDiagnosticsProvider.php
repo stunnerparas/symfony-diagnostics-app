@@ -32,5 +32,8 @@ abstract class AbstractDiagnosticsProvider implements DiagnosticsProviderInterfa
     }
 
     abstract public function getKey(): string;
+    /**
+     * @return array<string, mixed>
+     */
     abstract public function getDiagnostics(): array;
 }

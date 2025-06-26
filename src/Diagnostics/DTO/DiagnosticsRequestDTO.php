@@ -9,7 +9,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class DiagnosticsRequestDTO
 {
-
+    /**
+     * @var array<string> A list of specific diagnostic provider keys to include (e.g., 'php', 'symfony').
+     */
     #[Assert\Type('array')]
     #[Assert\All([
         new Assert\Type('string'),

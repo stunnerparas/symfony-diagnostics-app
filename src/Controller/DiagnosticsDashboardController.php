@@ -27,11 +27,13 @@ class DiagnosticsDashboardController extends AbstractController
         try {
             $diagnostics = $this->collector->collect($this->collector->getAvailableProviders());
 
+            /** @var array<string, array<string, mixed>> $formattedDiagnostics // PHPStan fix: explicit type hint */
             $formattedDiagnostics = [];
             foreach ($diagnostics as $providerKey => $data) {
                 if (isset($data['error'])) {
                     $formattedDiagnostics[$providerKey] = $data;
                 } else {
+                    // Apply top-level formatting
                     $formattedDiagnostics[$providerKey] = $this->formatTopLevelDiagnosticDataForTwig($data);
                 }
             }
@@ -43,11 +45,9 @@ class DiagnosticsDashboardController extends AbstractController
             ]);
 
         } catch (\Throwable $e) {
-
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->render('error/error.html.twig', [
                 'message' => 'An error occurred while loading the diagnostics dashboard.',
-
                 'exception_message' => $this->getParameter('kernel.debug') ? $e->getMessage() : null,
                 'exception_trace' => $this->getParameter('kernel.debug') ? $e->getTraceAsString() : null,
             ], new Response(null, Response::HTTP_INTERNAL_SERVER_ERROR));
@@ -58,6 +58,9 @@ class DiagnosticsDashboardController extends AbstractController
      * Formats top-level diagnostic data values for display in Twig, ensuring all outputs are strings.
      * Complex types (arrays/objects) are JSON encoded. If JSON encoding fails, a fallback string is used.
      * This function is NOT recursive.
+     *
+     * @param array<string, mixed> $data // PHPStan fix
+     * @return array<string, string> // PHPStan fix
      */
     private function formatTopLevelDiagnosticDataForTwig(array $data): array
     {

@@ -53,7 +53,9 @@ class DiagnosticsCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $startTime = microtime(true);
 
+        /** @var array<string>|null $include */ //
         $include = $input->getOption('include');
+        /** @var string|null $level */
         $level = $input->getOption('level');
         $asJson = $input->getOption('json');
 

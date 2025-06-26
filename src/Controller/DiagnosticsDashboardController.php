@@ -25,9 +25,10 @@ class DiagnosticsDashboardController extends AbstractController
         $startTime = microtime(true);
 
         try {
+            /** @var array<string, array<string, mixed>> $diagnostics */
             $diagnostics = $this->collector->collect($this->collector->getAvailableProviders());
 
-            /** @var array<string, array<string, mixed>> $formattedDiagnostics // PHPStan fix: explicit type hint */
+            /** @var array<string, array<string, string>> $formattedDiagnostics */
             $formattedDiagnostics = [];
             foreach ($diagnostics as $providerKey => $data) {
                 if (isset($data['error'])) {
@@ -44,10 +45,10 @@ class DiagnosticsDashboardController extends AbstractController
                 'executionTime' => microtime(true) - $startTime,
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return $this->render('error/error.html.twig', [
-                'message' => 'An error occurred while loading the diagnostics dashboard.',
+            return $this->render('error/error.html.twig', [ // Assuming an error.html.twig exists
+                'message' => 'An error occurred while loading the diagnostics dashboard: ' . $e->getMessage(),
                 'exception_message' => $this->getParameter('kernel.debug') ? $e->getMessage() : null,
                 'exception_trace' => $this->getParameter('kernel.debug') ? $e->getTraceAsString() : null,
             ], new Response(null, Response::HTTP_INTERNAL_SERVER_ERROR));
@@ -59,8 +60,8 @@ class DiagnosticsDashboardController extends AbstractController
      * Complex types (arrays/objects) are JSON encoded. If JSON encoding fails, a fallback string is used.
      * This function is NOT recursive.
      *
-     * @param array<string, mixed> $data // PHPStan fix
-     * @return array<string, string> // PHPStan fix
+     * @param array<string, mixed> $data
+     * @return array<string, string>
      */
     private function formatTopLevelDiagnosticDataForTwig(array $data): array
     {

@@ -14,15 +14,13 @@ use OpenApi\Attributes as OA;
 class DiagnosticsResponseDTO
 {
     /**
-     * @param array<string, array<string, mixed>|array<string, string>> $diagnostics // PHPStan fix
-     * @param array<string, mixed> $metadata
+     * @param array<string, array<string, mixed>|array<string, string>> $diagnostics An array of diagnostic data, typically keyed by provider name, where values can be nested arrays or formatted strings.
+     * @param array<string, mixed> $metadata An associative array for general metadata about the response (e.g., timestamp, available providers).
+     * @param float $executionTime The time taken to collect diagnostics, in seconds.
      */
     public function __construct(
-        #[OA\Property(type: "object", description: "Collected diagnostic data, keyed by provider name")]
-        public readonly array $diagnostics, // PHPStan fix: This array holds mixed data
-        #[OA\Property(type: "object", description: "Metadata about the response, e.g., timestamp, available providers")]
-        public readonly array $metadata, // PHPStan fix: This array holds mixed data
-        #[OA\Property(type: "number", format: "float", description: "Time taken to collect diagnostics in seconds")]
+        public readonly array $diagnostics,
+        public readonly array $metadata,
         public readonly float $executionTime
     ) {}
 }

@@ -2,9 +2,10 @@
 
 namespace App\Diagnostics\Provider;
 
-use App\Service\DiagnosticsProviderInterface; // Retain for clarity, though it implies the interface
+use App\Service\DiagnosticsProviderInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Provides diagnostic information about the Symfony environment.
@@ -43,12 +44,13 @@ class SymfonyDiagnosticsProvider implements DiagnosticsProviderInterface
      * Gathers and returns diagnostic data specific to the Symfony application.
      *
      * @inheritDoc
+     * @return array<string, mixed>
      */
     public function getDiagnostics(): array
     {
         $env = $_ENV['APP_ENV'] ?? 'dev';
 
-        $symfonyVersion = \Symfony\Component\HttpKernel\Kernel::VERSION;
+        $symfonyVersion = Kernel::VERSION;
 
         $debugMode = ($env === 'dev');
 
@@ -98,8 +100,12 @@ class SymfonyDiagnosticsProvider implements DiagnosticsProviderInterface
         return 50;
     }
 
+    /**
+     * Returns a human-readable name for the provider.
+     * @return string
+     */
     public function getName(): string
     {
-        // TODO: Implement getName() method.
+        return 'Symfony Application';
     }
 }

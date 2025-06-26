@@ -99,7 +99,7 @@ class SystemDiagnosticsController extends AbstractController
                 'error' => 'Invalid request',
                 'message' => $e->getMessage()
             ], Response::HTTP_BAD_REQUEST);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $e) { // Catch any other unexpected errors during execution.
             return $this->json([
                 'error' => 'Internal server error',
                 'message' => $e->getMessage()
@@ -129,6 +129,7 @@ class SystemDiagnosticsController extends AbstractController
     }
 
     /**
+     * @param DiagnosticsRequestDTO $requestDto
      * @return array<string>
      */
     private function resolveIncludeArray(DiagnosticsRequestDTO $requestDto): array
@@ -140,6 +141,6 @@ class SystemDiagnosticsController extends AbstractController
                 default => [],
             };
         }
-        return $requestDto->include ?? [];
+        return $requestDto->include;
     }
 }

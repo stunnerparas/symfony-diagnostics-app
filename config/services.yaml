@@ -1,0 +1,49 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # Tag all diagnostics providers
+    App\Diagnostics\Provider\:
+        resource: '../src/Diagnostics/Provider/'
+        tags: ['diagnostics.provider']
+
+    # Configure SymfonyDiagnosticsProvider with project dir and request stack
+    App\Diagnostics\Provider\SymfonyDiagnosticsProvider:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $requestStack: '@request_stack'
+        tags: ['diagnostics.provider']
+
+    # Internal non-decorated SystemDiagnosticsCollector
+    App\Service\SystemDiagnosticsCollector.inner:
+        class: App\Service\SystemDiagnosticsCollector
+        arguments:
+            $providers: !tagged_iterator diagnostics.provider
+        public: false
+
+    # Cached version of the diagnostics collector
+    App\Service\CachedDiagnosticsCollector:
+        arguments:
+            $collector: '@App\Service\SystemDiagnosticsCollector.inner'
+            $cache: '@cache.app'
+            $cacheTtl: 300
+
+    # Alias for the cached collector, used by controllers
+    App\Service\SystemDiagnosticsCollectorInterface:
+        alias: App\Service\CachedDiagnosticsCollector
+        public: true
+
+    # Configure API token authenticator with env variable
+    App\Security\ApiTokenAuthenticator:
+        arguments:
+            $apiToken: '%env(APP_API_TOKEN)%'

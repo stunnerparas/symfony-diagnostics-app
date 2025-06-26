@@ -1,0 +1,15 @@
+[30;43m                                                                                [39;49m
+[30;43m [WARNING] The local web server is already running                              [39;49m
+[30;43m                                                                                [39;49m
+
+[32mLocal Web Server[39m
+    Listening on http://127.0.0.1:8000
+    The Web server is using [32mPHP CGI 8.3.19[39m (from default version in $PATH)
+
+[32mLocal Domains[39m
+
+[32mWorkers[39m
+    [30;43mNo Workers[39;49m
+
+[32mEnvironment Variables[39m
+    [33mNone[39m

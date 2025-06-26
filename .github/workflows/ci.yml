@@ -1,0 +1,36 @@
+# .github/workflows/ci.yml
+name: CI # What this workflow is called on GitHub
+
+on: [push, pull_request] # Runs when you push code or open a pull request
+
+jobs:
+    tests:
+        runs-on: ubuntu-latest # Runs on a fresh Ubuntu machine
+
+        env: # Define environment variables for all steps in this job
+            APP_ENV: test # Set Symfony environment to 'test' for CI runs
+            # CRITICAL: This pulls the API token from GitHub Secrets.
+            # YOU MUST configure this secret in your GitHub repository settings!
+            APP_API_TOKEN: ${{ secrets.APP_API_TOKEN }}
+
+        steps:
+            - uses: actions/checkout@v3 # Get your code onto the machine
+
+            - uses: shivammathur/setup-php@v2 # Set up PHP with Composer and extensions
+              with:
+                  php-version: '8.3' # Updated to match your PHP 8.3.x setup
+                  extensions: opcache, intl, pdo_mysql, dom, xml, mbstring, zip # Added common Symfony extensions for diagnostics
+                  tools: composer # Ensure Composer is available
+
+            - name: Install dependencies # Get all your project's PHP libraries
+              run: composer install --prefer-dist --no-progress
+
+            - name: Run PHPUnit tests # Run all your automated tests
+                # APP_API_TOKEN is available here from the job-level 'env'
+              run: vendor/bin/phpunit
+
+            - name: Run PHPStan static analysis # Check your code for common mistakes (without running it)
+              run: vendor/bin/phpstan analyse src/ # Specify that PHPStan should analyze the 'src/' directory
+
+            - name: Check code style # Make sure your code looks neat and follows rules
+              run: vendor/bin/php-cs-fixer fix --dry-run --stop-on-violation # Reports style issues, fails if found

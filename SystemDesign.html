@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symfony Diagnostics Application Architecture</title>
+    <meta name="description" content="Professional system architecture diagram for Symfony-based diagnostics application with authentication, data collection, and dual output formats">
+    <meta name="author" content="System Architect">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .flow-diagram {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            border-top: 4px solid;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .step.step-1 { border-top-color: #3498db; }
+        .step.step-2 { border-top-color: #e74c3c; }
+        .step.step-3 { border-top-color: #f39c12; }
+        .step.step-4 { border-top-color: #27ae60; }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .step-1 .step-number { background: #3498db; }
+        .step-2 .step-number { background: #e74c3c; }
+        .step-3 .step-number { background: #f39c12; }
+        .step-4 .step-number { background: #27ae60; }
+
+        .step h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            margin-top: 10px;
+        }
+
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .component {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #dee2e6;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .component:hover {
+            background: #e9ecef;
+            border-left-color: #6c757d;
+        }
+
+        .component.primary {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            border-left-color: #2d3436;
+        }
+
+        .component.success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            border-left-color: #2d3436;
+        }
+
+        .component.warning {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+            color: white;
+            border-left-color: #2d3436;
+        }
+
+        .component.danger {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+            border-left-color: #2d3436;
+        }
+
+        .arrows {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .arrow {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #74b9ff, #0984e3);
+            position: relative;
+            margin: 0 10px;
+        }
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -5px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #0984e3;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+        }
+
+        .providers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .provider {
+            background: #f1c40f;
+            color: #2c3e50;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .provider:hover {
+            background: #f39c12;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .output-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .output {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .output.json {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+        }
+
+        .output.dashboard {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+        }
+
+        .output:hover {
+            transform: scale(1.05);
+        }
+
+        .icon {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        @media (max-width: 1200px) {
+            .flow-diagram {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .flow-diagram {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🔧 Symfony Diagnostics Application Architecture</h1>
+    <div style="text-align: center; margin-bottom: 30px; color: #7f8c8d;">
+        <p style="font-size: 1.1em; margin-bottom: 10px;">Professional System Design & Implementation Flow</p>
+        <p style="font-size: 0.95em;">Secure • Scalable • Maintainable • Production-Ready</p>
+    </div>
+
+    <div class="flow-diagram">
+        <!-- Step 1: Authentication -->
+        <div class="step step-1">
+            <div class="step-number">1</div>
+            <h3>🔐 Authentication</h3>
+            <div class="step-content">
+                <div class="component primary">
+                    <span class="icon">🌐</span>
+                    User Request (Browser/cURL)
+                </div>
+                <div class="component">
+                    <span class="icon">🏠</span>
+                    Symfony App Entry Point
+                </div>
+                <div class="component">
+                    <span class="icon">📋</span>
+                    Login Screen Display
+                </div>
+                <div class="component">
+                    <span class="icon">🔑</span>
+                    API Token from .env
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Security Check -->
+        <div class="step step-2">
+            <div class="step-number">2</div>
+            <h3>🛡️ Security Validation</h3>
+            <div class="step-content">
+                <div class="component warning">
+                    <span class="icon">🔍</span>
+                    Token Validation Request
+                </div>
+                <div class="component">
+                    <span class="icon">⚖️</span>
+                    Security Check Process
+                </div>
+                <div class="component success">
+                    <span class="icon">✅</span>
+                    Access Granted
+                </div>
+                <div class="component danger">
+                    <span class="icon">❌</span>
+                    Access Denied (if invalid)
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Data Collection -->
+        <div class="step step-3">
+            <div class="step-number">3</div>
+            <h3>📊 Data Collection</h3>
+            <div class="step-content">
+                <div class="component primary">
+                    <span class="icon">🧠</span>
+                    Diagnostics Engine
+                </div>
+                <div class="providers-grid">
+                    <div class="provider">🐘 PHP Info</div>
+                    <div class="provider">🎵 Symfony Data</div>
+                    <div class="provider">⚙️ App Specific</div>
+                    <div class="provider">💻 System Resources</div>
+                    <div class="provider">📈 Prometheus Metrics</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Output -->
+        <div class="step step-4">
+            <div class="step-number">4</div>
+            <h3>📤 Results Delivery</h3>
+            <div class="step-content">
+                <div class="component primary">
+                    <span class="icon">🎯</span>
+                    Response Handler
+                </div>
+                <div class="output-options">
+                    <div class="output json">
+                        <span class="icon">📋</span>
+                        JSON API
+                        <small style="display: block; margin-top: 5px;">For automation</small>
+                    </div>
+                    <div class="output dashboard">
+                        <span class="icon">📊</span>
+                        Web Dashboard
+                        <small style="display: block; margin-top: 5px;">For humans</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="arrows">
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+        <div class="arrow"></div>
+    </div>
+
+    <div style="text-align: center; color: #7f8c8d; font-style: italic; margin-top: 40px;">
+        <p style="font-size: 1.1em; margin-bottom: 15px;">🚀 Enterprise-grade diagnostics system with comprehensive monitoring</p>
+        <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-top: 20px; font-size: 0.9em;">
+            <span style="color: #3498db;">✓ Token-based Authentication</span>
+            <span style="color: #e74c3c;">✓ Multi-source Data Collection</span>
+            <span style="color: #f39c12;">✓ Prometheus Integration</span>
+            <span style="color: #27ae60;">✓ Dual Output Formats</span>
+        </div>
+        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #ecf0f1;">
+            <p style="font-size: 0.85em; color: #95a5a6;">
+                Built with Symfony Framework • RESTful API Design • Modern Web Standards
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

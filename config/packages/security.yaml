@@ -1,0 +1,45 @@
+# config/packages/security.yaml
+security:
+    # Configure password hashers. Use 'plaintext' for InMemoryUser with APP_API_TOKEN.
+    # For production with real users, 'auto' is recommended for secure hashing.
+    password_hashers:
+        Symfony\Component\Security\Core\User\InMemoryUser:
+            algorithm: plaintext
+
+    # Define user providers for authentication.
+    providers:
+        app_user_provider:
+            memory:
+                users:
+                    api_user:
+                        password: '%env(APP_API_TOKEN)%'
+                        roles: ['ROLE_API_USER']
+
+    # Configure security firewalls to intercept and secure requests.
+    firewalls:
+        # Development firewall: disables security for profiler and assets.
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # API firewall: protects routes starting with /api/.
+        api:
+            pattern: ^/api/
+            stateless: true # APIs typically don't use sessions.
+            provider: app_user_provider # Link to the user provider defined above.
+            entry_point: App\Security\ApiTokenAuthenticator # Handles authentication failures.
+            custom_authenticator: App\Security\ApiTokenAuthenticator # Use the custom token authenticator.
+
+    # Define access rules based on URL paths and roles.
+    access_control:
+        # Allow public access to the login endpoint (users authenticate to get a token).
+        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
+        # Require ROLE_API_USER for the diagnostics API endpoint.
+        - { path: ^/api/diagnostics, roles: ROLE_API_USER }
+        # Allow public access to the web dashboard (no login needed for overview).
+        - { path: ^/diagnostics, roles: PUBLIC_ACCESS }
+        # Allow public access to Prometheus metrics endpoint.
+        - { path: ^/metrics, roles: PUBLIC_ACCESS }
+        # Allow public access to any other path by default if not matched above.
+        - { path: ^/, roles: PUBLIC_ACCESS }
+

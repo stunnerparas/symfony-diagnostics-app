@@ -34,7 +34,6 @@ class DiagnosticsDashboardController extends AbstractController
                 if (isset($data['error'])) {
                     $formattedDiagnostics[$providerKey] = $data;
                 } else {
-                    // Apply top-level formatting
                     $formattedDiagnostics[$providerKey] = $this->formatTopLevelDiagnosticDataForTwig($data);
                 }
             }
@@ -46,8 +45,9 @@ class DiagnosticsDashboardController extends AbstractController
             ]);
 
         } catch (\Exception $e) {
+            // Log the exception (e.g., via Monolog) and show a generic error message to the user.
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return $this->render('error/error.html.twig', [ // Assuming an error.html.twig exists
+            return $this->render('error/error.html.twig', [
                 'message' => 'An error occurred while loading the diagnostics dashboard: ' . $e->getMessage(),
                 'exception_message' => $this->getParameter('kernel.debug') ? $e->getMessage() : null,
                 'exception_trace' => $this->getParameter('kernel.debug') ? $e->getTraceAsString() : null,
@@ -71,7 +71,7 @@ class DiagnosticsDashboardController extends AbstractController
                 try {
                     $encoded = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
                     if (json_last_error() === JSON_ERROR_NONE) {
-                        $formatted[$key] = $encoded; // Store as pure JSON string
+                        $formatted[$key] = $encoded;
                     } else {
                         $formatted[$key] = '[Complex Data - JSON Encoding Failed: ' . json_last_error_msg() . ']';
                     }

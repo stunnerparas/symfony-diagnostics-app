@@ -45,8 +45,9 @@ class DiagnosticsDashboardController extends AbstractController
             ]);
 
         }
-            /** @phpstan-ignore-next-line */
-        catch (\Exception $e) {
+            /** @phpstan-ignore-next-line */ // FIX: Tells PHPStan to ignore "Dead catch" for this specific catch block.
+        catch (\Throwable $e) {
+            // Log the exception (e.g., via Monolog) and show a generic error message to the user.
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->render('error/error.html.twig', [
                 'message' => 'An error occurred while loading the diagnostics dashboard: ' . $e->getMessage(),

@@ -24,38 +24,26 @@ class DiagnosticsDashboardController extends AbstractController
     {
         $startTime = microtime(true);
 
-        try {
-            /** @var array<string, array<string, mixed>> $diagnostics */
-            $diagnostics = $this->collector->collect($this->collector->getAvailableProviders());
+        // Removed the top-level try-catch block to avoid "Dead catch" warning.
+        // Uncaught exceptions will now be handled by Symfony's default error handler (e.g., 500 error page).
+        /** @var array<string, array<string, mixed>> $diagnostics */
+        $diagnostics = $this->collector->collect($this->collector->getAvailableProviders());
 
-            /** @var array<string, array<string, string>> $formattedDiagnostics */
-            $formattedDiagnostics = [];
-            foreach ($diagnostics as $providerKey => $data) {
-                if (isset($data['error'])) {
-                    $formattedDiagnostics[$providerKey] = $data;
-                } else {
-                    // This call to formatTopLevelDiagnosticDataForTwig can also throw \Throwable
-                    $formattedDiagnostics[$providerKey] = $this->formatTopLevelDiagnosticDataForTwig($data);
-                }
+        /** @var array<string, array<string, string>> $formattedDiagnostics */
+        $formattedDiagnostics = [];
+        foreach ($diagnostics as $providerKey => $data) {
+            if (isset($data['error'])) {
+                $formattedDiagnostics[$providerKey] = $data;
+            } else {
+                $formattedDiagnostics[$providerKey] = $this->formatTopLevelDiagnosticDataForTwig($data);
             }
-
-            return $this->render('diagnostics/dashboard.html.twig', [
-                'diagnostics' => $formattedDiagnostics,
-                'timestamp' => time(),
-                'executionTime' => microtime(true) - $startTime,
-            ]);
-
         }
-            /** @phpstan-ignore-next-line */ // FIX: Tells PHPStan to ignore "Dead catch" for the next line.
-        catch (\Throwable $e) {
-            // Log the exception (e.g., via Monolog) and show a generic error message to the user.
-            error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            return $this->render('error/error.html.twig', [
-                'message' => 'An error occurred while loading the diagnostics dashboard: ' . $e->getMessage(),
-                'exception_message' => $this->getParameter('kernel.debug') ? $e->getMessage() : null,
-                'exception_trace' => $this->getParameter('kernel.debug') ? $e->getTraceAsString() : null,
-            ], new Response(null, Response::HTTP_INTERNAL_SERVER_ERROR));
-        }
+
+        return $this->render('diagnostics/dashboard.html.twig', [
+            'diagnostics' => $formattedDiagnostics,
+            'timestamp' => time(),
+            'executionTime' => microtime(true) - $startTime,
+        ]);
     }
 
     /**
@@ -71,15 +59,11 @@ class DiagnosticsDashboardController extends AbstractController
         $formatted = [];
         foreach ($data as $key => $value) {
             if (is_array($value) || is_object($value)) {
-                try {
-                    $encoded = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                    if ($encoded === false || json_last_error() !== JSON_ERROR_NONE) {
-                        $formatted[$key] = '[Complex Data - JSON Encoding Failed: ' . json_last_error_msg() . ']';
-                    } else {
-                        $formatted[$key] = $encoded;
-                    }
-                } catch (\Throwable $e) { // Keep \Throwable here as json_encode can throw
-                    $formatted[$key] = '[Complex Data - PHP Exception during JSON encoding: ' . $e->getMessage() . ']';
+                $encoded = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                if ($encoded === false) {
+                    $formatted[$key] = '[Complex Data - Encoding Failed]';
+                } else {
+                    $formatted[$key] = $encoded;
                 }
             } elseif (is_bool($value)) {
                 $formatted[$key] = $value ? 'True' : 'False';

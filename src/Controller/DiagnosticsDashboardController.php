@@ -45,7 +45,6 @@ class DiagnosticsDashboardController extends AbstractController
             ]);
 
         } catch (\Exception $e) {
-            // Log the exception (e.g., via Monolog) and show a generic error message to the user.
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->render('error/error.html.twig', [
                 'message' => 'An error occurred while loading the diagnostics dashboard: ' . $e->getMessage(),

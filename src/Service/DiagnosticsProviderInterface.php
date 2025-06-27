@@ -18,13 +18,13 @@ interface DiagnosticsProviderInterface
      *
      * @return string The unique identifier for the diagnostic provider.
      */
-    public function getKey(): string; // Changed from getName() to getKey()
+    public function getKey(): string;
 
     /**
      * Gathers and returns the diagnostic data for this provider.
      * The structure of the returned array is specific to each provider.
      *
-     * @return array An associative array of diagnostic data.
+     * @return array<string, mixed> // FIX: Added explicit array type hint for PHPStan
      */
     public function getDiagnostics(): array;
 
@@ -35,6 +35,13 @@ interface DiagnosticsProviderInterface
      * @return bool True if the provider is enabled, false otherwise.
      */
     public function isEnabled(): bool;
+
+    /**
+     * Sets the enabled status of the provider.
+     * @param bool $enabled
+     * @return void
+     */
+    public function setEnabled(bool $enabled): void;
 
     /**
      * Returns the priority of this provider, used for ordering.

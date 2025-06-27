@@ -3,8 +3,8 @@
 namespace App\Service;
 
 use App\Diagnostics\Exception\InvalidProviderException;
-use App\Diagnostics\Provider\DiagnosticsProviderInterface;
 use Psr\Log\LoggerInterface;
+use App\Service\DiagnosticsProviderInterface;
 
 /**
  * Service for collecting system diagnostics from various providers.

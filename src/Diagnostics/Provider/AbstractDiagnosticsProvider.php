@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Diagnostics\Provider;
+use App\Service\DiagnosticsProviderInterface;
+
 
 /**
  * This class provides default implementations for common properties and methods defined in DiagnosticsProviderInterface, such as 'enabled' status and 'priority'.

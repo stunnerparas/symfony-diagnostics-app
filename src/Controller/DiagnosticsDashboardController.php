@@ -73,10 +73,10 @@ class DiagnosticsDashboardController extends AbstractController
             if (is_array($value) || is_object($value)) {
                 try {
                     $encoded = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                    if (json_last_error() === JSON_ERROR_NONE) {
-                        $formatted[$key] = $encoded;
-                    } else {
+                    if ($encoded === false || json_last_error() !== JSON_ERROR_NONE) {
                         $formatted[$key] = '[Complex Data - JSON Encoding Failed: ' . json_last_error_msg() . ']';
+                    } else {
+                        $formatted[$key] = $encoded;
                     }
                 } catch (\Throwable $e) { // Keep \Throwable here as json_encode can throw
                     $formatted[$key] = '[Complex Data - PHP Exception during JSON encoding: ' . $e->getMessage() . ']';

@@ -34,6 +34,7 @@ class DiagnosticsDashboardController extends AbstractController
                 if (isset($data['error'])) {
                     $formattedDiagnostics[$providerKey] = $data;
                 } else {
+                    // This call to formatTopLevelDiagnosticDataForTwig can also throw \Throwable
                     $formattedDiagnostics[$providerKey] = $this->formatTopLevelDiagnosticDataForTwig($data);
                 }
             }
@@ -45,7 +46,7 @@ class DiagnosticsDashboardController extends AbstractController
             ]);
 
         }
-            /** @phpstan-ignore-next-line */ // FIX: Tells PHPStan to ignore "Dead catch" for this specific catch block.
+            /** @phpstan-ignore-line */ // FIX: Tells PHPStan to ignore "Dead catch" for this specific catch block.
         catch (\Throwable $e) {
             // Log the exception (e.g., via Monolog) and show a generic error message to the user.
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());

@@ -44,7 +44,8 @@ class DiagnosticsDashboardController extends AbstractController
                 'executionTime' => microtime(true) - $startTime,
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $e) { // FIX: Changed from \Throwable to \Exception to satisfy PHPStan
+            // Log the exception (e.g., via Monolog) and show a generic error message to the user.
             error_log('Error loading diagnostics dashboard: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return $this->render('error/error.html.twig', [
                 'message' => 'An error occurred while loading the diagnostics dashboard: ' . $e->getMessage(),
@@ -74,7 +75,7 @@ class DiagnosticsDashboardController extends AbstractController
                     } else {
                         $formatted[$key] = '[Complex Data - JSON Encoding Failed: ' . json_last_error_msg() . ']';
                     }
-                } catch (\Throwable $e) {
+                } catch (\Throwable $e) { // Keep \Throwable here as json_encode can throw
                     $formatted[$key] = '[Complex Data - PHP Exception during JSON encoding: ' . $e->getMessage() . ']';
                 }
             } elseif (is_bool($value)) {

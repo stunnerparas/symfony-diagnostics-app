@@ -3,7 +3,7 @@
 namespace App\Diagnostics\Provider;
 
 use App\Service\DiagnosticsProviderInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+// Removed: use Symfony\Component\HttpFoundation\RequestStack; // This was removed to address 'never read, only written' warning
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\HttpKernel\Kernel;
 
@@ -15,19 +15,16 @@ use Symfony\Component\HttpKernel\Kernel;
  * It's automatically tagged as a 'diagnostics.provider' service in Symfony.
  */
 #[AsTaggedItem('diagnostics.provider')]
-class SymfonyDiagnosticsProvider implements DiagnosticsProviderInterface
+class SymfonyDiagnosticsProvider extends AbstractDiagnosticsProvider implements DiagnosticsProviderInterface // FIX: Now extends AbstractDiagnosticsProvider
 {
     private string $projectDir;
-    private ?RequestStack $requestStack;
 
     /**
      * @param string $projectDir The root directory of the Symfony project.
-     * @param RequestStack|null $requestStack Symfony's request stack service (optional).
      */
-    public function __construct(string $projectDir, RequestStack $requestStack = null)
+    public function __construct(string $projectDir)
     {
         $this->projectDir = $projectDir;
-        $this->requestStack = $requestStack;
     }
 
     /**
@@ -82,23 +79,15 @@ class SymfonyDiagnosticsProvider implements DiagnosticsProviderInterface
 
     /**
      * Checks if this diagnostic provider is currently enabled.
-     *
+     * This method is now inherited from AbstractDiagnosticsProvider.
      * @inheritDoc
      */
-    public function isEnabled(): bool
-    {
-        return true;
-    }
 
     /**
      * Returns the priority of this provider, used for ordering.
-     *
+     * This method is now inherited from AbstractDiagnosticsProvider.
      * @inheritDoc
      */
-    public function getPriority(): int
-    {
-        return 50;
-    }
 
     /**
      * Returns a human-readable name for the provider.
@@ -108,4 +97,5 @@ class SymfonyDiagnosticsProvider implements DiagnosticsProviderInterface
     {
         return 'Symfony Application';
     }
+
 }

@@ -11,14 +11,15 @@ jobs:
 
             - uses: shivammathur/setup-php@v2
               with:
-                  php-version: '8.3' # FIX: Changed PHP version to 8.3 for better compatibility with PHPUnit 12.x
+                  php-version: '8.3' # Changed PHP version to 8.3 for better compatibility with PHPUnit 12.x
                   extensions: opcache
                   tools: composer
-                  # FIX: Removed 'cache: true' as it's an unexpected input for this action version/configuration.
-                  #      Composer cache is often managed automatically or via 'composer-cache: true' if available.
+                  # Removed 'cache: true' as it's an unexpected input for this action version/configuration.
 
             - name: Install dependencies
-              run: composer update --prefer-dist --no-interaction
+                # FIX: Changed from 'composer update' to 'composer install' for more reliable and consistent dependency
+                #      installation in CI, ensuring dev dependencies from composer.lock are present.
+              run: composer install --no-interaction --prefer-dist
 
             - name: Run PHPUnit tests
               run: vendor/bin/phpunit
